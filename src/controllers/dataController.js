@@ -4,24 +4,28 @@ const { pool } = require('../config/database');
  * Controller para gerenciar operações de dados
  */
 const dataController = {
-  
+
   /**
    * Busca todas as tabelas do banco de dados
    * GET /api/tables
    */
   getAllTables: async (req, res) => {
     try {
+      // Usa o pool do evento selecionado (vem do middleware)
+      const dbPool = req.dbPool || pool;
+
       const query = `
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
         ORDER BY table_name;
       `;
-      
-      const result = await pool.query(query);
+
+      const result = await dbPool.query(query);
       
       res.status(200).json({
         success: true,
+        event: req.eventName || "Rec'n'Play",
         count: result.rows.length,
         data: result.rows
       });
@@ -41,9 +45,12 @@ const dataController = {
    */
   getTableData: async (req, res) => {
     try {
+      // Usa o pool do evento selecionado (vem do middleware)
+      const dbPool = req.dbPool || pool;
+
       const { tableName } = req.params;
       const { limit = 100, offset = 0 } = req.query;
-      
+
       // Validação simples do nome da tabela
       if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
         return res.status(400).json({
@@ -54,14 +61,15 @@ const dataController = {
 
       // Busca os dados com paginação
       const dataQuery = `SELECT * FROM ${tableName} LIMIT $1 OFFSET $2`;
-      const dataResult = await pool.query(dataQuery, [limit, offset]);
+      const dataResult = await dbPool.query(dataQuery, [limit, offset]);
 
       // Busca o total de registros
       const countQuery = `SELECT COUNT(*) FROM ${tableName}`;
-      const countResult = await pool.query(countQuery);
-      
+      const countResult = await dbPool.query(countQuery);
+
       res.status(200).json({
         success: true,
+        event: req.eventName || "Rec'n'Play",
         table: tableName,
         total: parseInt(countResult.rows[0].count),
         count: dataResult.rows.length,
@@ -85,15 +93,18 @@ const dataController = {
    */
   getAllData: async (req, res) => {
     try {
+      // Usa o pool do evento selecionado (vem do middleware)
+      const dbPool = req.dbPool || pool;
+
       // Primeiro, busca todas as tabelas
       const tablesQuery = `
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
         ORDER BY table_name;
       `;
-      
-      const tablesResult = await pool.query(tablesQuery);
+
+      const tablesResult = await dbPool.query(tablesQuery);
       const allData = {};
 
       // Para cada tabela, busca todos os dados
@@ -101,7 +112,7 @@ const dataController = {
         const tableName = table.table_name;
         try {
           const dataQuery = `SELECT * FROM ${tableName}`;
-          const dataResult = await pool.query(dataQuery);
+          const dataResult = await dbPool.query(dataQuery);
           allData[tableName] = {
             count: dataResult.rows.length,
             data: dataResult.rows
@@ -116,6 +127,7 @@ const dataController = {
 
       res.status(200).json({
         success: true,
+        event: req.eventName || "Rec'n'Play",
         totalTables: tablesResult.rows.length,
         tables: allData
       });
@@ -135,9 +147,13 @@ const dataController = {
    */
   healthCheck: async (req, res) => {
     try {
-      const result = await pool.query('SELECT NOW()');
+      // Usa o pool do evento selecionado (vem do middleware)
+      const dbPool = req.dbPool || pool;
+
+      const result = await dbPool.query('SELECT NOW()');
       res.status(200).json({
         success: true,
+        event: req.eventName || "Rec'n'Play",
         message: 'API e banco de dados funcionando corretamente',
         timestamp: result.rows[0].now
       });
