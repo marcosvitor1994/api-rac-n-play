@@ -11,7 +11,11 @@ const app = express();
 
 // CORS - Permite requisições do frontend
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://dashboard-rec-n-play.vercel.app'],
+  origin: [
+    'http://localhost:3000',
+    'https://dashboard-rec-n-play.vercel.app',
+    'https://dashboard-global-citizen.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
