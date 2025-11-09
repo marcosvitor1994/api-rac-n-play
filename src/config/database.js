@@ -23,6 +23,17 @@ const poolGlobal = new Pool({
   connectionTimeoutMillis: 2000, // Tempo de espera para estabelecer conexão
 });
 
+// Configuração do Pool de Conexões - COP
+const poolCOP = new Pool({
+  connectionString: process.env.DATABASE_URL_COP,
+  ssl: {
+    rejectUnauthorized: false // Necessário para conexões Railway
+  },
+  max: 20, // Número máximo de clientes no pool
+  idleTimeoutMillis: 30000, // Tempo de espera antes de fechar cliente inativo
+  connectionTimeoutMillis: 2000, // Tempo de espera para estabelecer conexão
+});
+
 // Event listeners para monitoramento - Rec'n'Play
 poolRecNPlay.on('connect', () => {
   console.log('✅ [Rec\'n\'Play] Nova conexão estabelecida com o banco de dados');
@@ -41,19 +52,31 @@ poolGlobal.on('error', (err) => {
   console.error('❌ [Global Citizen] Erro inesperado no pool de conexões:', err);
 });
 
+// Event listeners para monitoramento - COP
+poolCOP.on('connect', () => {
+  console.log('✅ [COP] Nova conexão estabelecida com o banco de dados');
+});
+
+poolCOP.on('error', (err) => {
+  console.error('❌ [COP] Erro inesperado no pool de conexões:', err);
+});
+
 // Função para obter o pool correto baseado no evento
 const getPool = (event = 'recnplay') => {
   if (event === 'global') {
     return poolGlobal;
+  } else if (event === 'cop') {
+    return poolCOP;
   }
   return poolRecNPlay;
 };
 
-// Função para testar a conexão de ambos os pools
+// Função para testar a conexão de todos os pools
 const testConnection = async () => {
   const results = {
     recnplay: false,
-    global: false
+    global: false,
+    cop: false
   };
 
   try {
@@ -74,12 +97,22 @@ const testConnection = async () => {
     console.error('❌ [Global Citizen] Erro ao conectar com o banco de dados:', error.message);
   }
 
+  try {
+    const clientCOP = await poolCOP.connect();
+    console.log('🔌 [COP] Conexão com PostgreSQL estabelecida com sucesso!');
+    clientCOP.release();
+    results.cop = true;
+  } catch (error) {
+    console.error('❌ [COP] Erro ao conectar com o banco de dados:', error.message);
+  }
+
   return results;
 };
 
 module.exports = {
   poolRecNPlay,
   poolGlobal,
+  poolCOP,
   getPool,
   testConnection,
   // Mantém retrocompatibilidade

@@ -7,6 +7,7 @@ const { getPool } = require('../config/database');
  * Valores aceitos:
  * - 'recnplay' ou 'recnPlay' -> Rec'n'Play (padrão)
  * - 'global' ou 'globalcitizen' -> Global Citizen Festival Amazônia
+ * - 'cop' -> COP
  */
 const eventSelector = (req, res, next) => {
   // Verifica query parameter primeiro, depois header
@@ -23,10 +24,10 @@ const eventSelector = (req, res, next) => {
   }
 
   // Valida o evento
-  if (!['recnplay', 'global'].includes(event)) {
+  if (!['recnplay', 'global', 'cop'].includes(event)) {
     return res.status(400).json({
       success: false,
-      message: 'Evento inválido. Use "recnplay" ou "global"',
+      message: 'Evento inválido. Use "recnplay", "global" ou "cop"',
       receivedEvent: req.query.event || req.headers['x-event']
     });
   }
@@ -34,7 +35,15 @@ const eventSelector = (req, res, next) => {
   // Adiciona o evento e o pool ao objeto request
   req.event = event;
   req.dbPool = getPool(event);
-  req.eventName = event === 'global' ? 'Global Citizen Festival Amazônia' : "Rec'n'Play";
+
+  // Define o nome do evento
+  if (event === 'global') {
+    req.eventName = 'Global Citizen Festival Amazônia';
+  } else if (event === 'cop') {
+    req.eventName = 'COP';
+  } else {
+    req.eventName = "Rec'n'Play";
+  }
 
   // Log para debug
   console.log(`📊 Requisição para evento: ${req.eventName} (${event})`);
