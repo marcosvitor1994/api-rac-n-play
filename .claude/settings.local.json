@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm start)",
       "Bash(timeout /t 3)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []
