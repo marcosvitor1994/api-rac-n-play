@@ -9,6 +9,7 @@ const { getPool } = require('../config/database');
  * - 'global' ou 'globalcitizen' -> Global Citizen Festival Amazônia
  * - 'cop' -> COP
  * - 'sest' ou 'sestsenat' -> SEST SENAT COP 30
+ * - 'southsummit' ou 'south-summit' -> South Summit
  */
 const eventSelector = (req, res, next) => {
   // Verifica query parameter primeiro, depois header
@@ -24,13 +25,15 @@ const eventSelector = (req, res, next) => {
     event = 'recnplay';
   } else if (event === 'sestsenat' || event === 'sest-senat' || event === 'sest_senat') {
     event = 'sest';
+  } else if (event === 'south-summit' || event === 'south_summit') {
+    event = 'southsummit';
   }
 
   // Valida o evento
-  if (!['recnplay', 'global', 'cop', 'sest'].includes(event)) {
+  if (!['recnplay', 'global', 'cop', 'sest', 'southsummit'].includes(event)) {
     return res.status(400).json({
       success: false,
-      message: 'Evento inválido. Use "recnplay", "global", "cop" ou "sest"',
+      message: 'Evento inválido. Use "recnplay", "global", "cop", "sest" ou "southsummit"',
       receivedEvent: req.query.event || req.headers['x-event']
     });
   }
@@ -46,6 +49,8 @@ const eventSelector = (req, res, next) => {
     req.eventName = 'COP';
   } else if (event === 'sest') {
     req.eventName = 'SEST SENAT COP 30';
+  } else if (event === 'southsummit') {
+    req.eventName = 'South Summit';
   } else {
     req.eventName = "Rec'n'Play";
   }
