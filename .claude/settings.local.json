@@ -4,7 +4,16 @@
       "Bash(npm start)",
       "Bash(timeout /t 3)",
       "Bash(curl:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(node -c src/config/database.js)",
+      "Bash(node -c src/middlewares/eventSelector.js)",
+      "Bash(node -c src/routes/index.js)",
+      "Bash(node -c src/app.js)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const { poolRio2C } = require\\('./src/config/database'\\); \\(async \\(\\) => { try { const r = await poolRio2C.query\\('SELECT NOW\\(\\)'\\); console.log\\('✅ Conexao Rio2C OK:', r.rows[0].now\\); const t = await poolRio2C.query\\(\\\\\"SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name\\\\\"\\); console.log\\('Tabelas encontradas \\(' + t.rows.length + '\\):', t.rows.map\\(x=>x.table_name\\).join\\(', '\\)\\); } catch\\(e\\) { console.error\\('❌ Erro:', e.message\\); } finally { await poolRio2C.end\\(\\); } }\\)\\(\\);\")",
+      "Bash(npm install *)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const { poolRio2C } = require\\('./src/config/database'\\); \\(async \\(\\) => { try { const r = await poolRio2C.query\\('SELECT NOW\\(\\)'\\); console.log\\('Conexao Rio2C OK:', r.rows[0].now\\); const t = await poolRio2C.query\\(\\\\\"SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name\\\\\"\\); console.log\\('Tabelas \\(' + t.rows.length + '\\):', t.rows.map\\(x=>x.table_name\\).join\\(', '\\)\\); } catch\\(e\\) { console.error\\('Erro:', e.message\\); } finally { await poolRio2C.end\\(\\); } }\\)\\(\\);\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ],
     "deny": [],
     "ask": []
