@@ -5,7 +5,7 @@ const eventSelector = require('../middlewares/eventSelector');
 
 /**
  * Rotas da API
- * Todas as rotas suportam seleção de evento via query parameter ?event=recnplay, ?event=global, ?event=cop, ?event=sest, ?event=southsummit ou ?event=rio2c
+ * Todas as rotas suportam seleção de evento via query parameter ?event=recnplay, ?event=global, ?event=cop, ?event=sest, ?event=southsummit, ?event=rio2c ou ?event=mulheres
  */
 
 // Health check - verifica se a API está funcionando
@@ -31,7 +31,8 @@ router.get('/', (req, res) => {
       cop: 'COP',
       sest: 'SEST SENAT COP 30',
       southsummit: 'South Summit',
-      rio2c: 'Rio2C'
+      rio2c: 'Rio2C',
+      mulheres: 'Wiki Delas'
     },
     usage: {
       description: 'Adicione o parâmetro ?event= em qualquer rota',
@@ -42,15 +43,16 @@ router.get('/', (req, res) => {
         'GET /api/tables?event=sest',
         'GET /api/tables?event=southsummit',
         'GET /api/tables?event=rio2c',
+        'GET /api/tables?event=mulheres',
         'GET /api/data/all?event=recnplay',
-        'GET /api/data/:tableName?event=rio2c&limit=100&offset=0'
+        'GET /api/data/:tableName?event=mulheres&limit=100&offset=0'
       ]
     },
     endpoints: {
-      health: 'GET /api/health?event={recnplay|global|cop|sest|southsummit|rio2c}',
-      tables: 'GET /api/tables?event={recnplay|global|cop|sest|southsummit|rio2c}',
-      allData: 'GET /api/data/all?event={recnplay|global|cop|sest|southsummit|rio2c}',
-      tableData: 'GET /api/data/:tableName?event={recnplay|global|cop|sest|southsummit|rio2c}&limit=100&offset=0'
+      health: 'GET /api/health?event={recnplay|global|cop|sest|southsummit|rio2c|mulheres}',
+      tables: 'GET /api/tables?event={recnplay|global|cop|sest|southsummit|rio2c|mulheres}',
+      allData: 'GET /api/data/all?event={recnplay|global|cop|sest|southsummit|rio2c|mulheres}',
+      tableData: 'GET /api/data/:tableName?event={recnplay|global|cop|sest|southsummit|rio2c|mulheres}&limit=100&offset=0'
     },
     defaultEvent: 'recnplay (Rec\'n\'Play é usado quando o parâmetro event não é especificado)'
   });

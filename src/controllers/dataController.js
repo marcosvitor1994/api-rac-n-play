@@ -60,11 +60,12 @@ const dataController = {
       }
 
       // Busca os dados com paginação
-      const dataQuery = `SELECT * FROM ${tableName} LIMIT $1 OFFSET $2`;
+      // Aspas duplas preservam maiúsculas no nome da tabela (ex: "Profile" do Prisma)
+      const dataQuery = `SELECT * FROM "${tableName}" LIMIT $1 OFFSET $2`;
       const dataResult = await dbPool.query(dataQuery, [limit, offset]);
 
       // Busca o total de registros
-      const countQuery = `SELECT COUNT(*) FROM ${tableName}`;
+      const countQuery = `SELECT COUNT(*) FROM "${tableName}"`;
       const countResult = await dbPool.query(countQuery);
 
       res.status(200).json({
@@ -111,7 +112,7 @@ const dataController = {
       for (const table of tablesResult.rows) {
         const tableName = table.table_name;
         try {
-          const dataQuery = `SELECT * FROM ${tableName}`;
+          const dataQuery = `SELECT * FROM "${tableName}"`;
           const dataResult = await dbPool.query(dataQuery);
           allData[tableName] = {
             count: dataResult.rows.length,

@@ -67,6 +67,17 @@ const poolRio2C = new Pool({
   connectionTimeoutMillis: 2000, // Tempo de espera para estabelecer conexão
 });
 
+// Configuração do Pool de Conexões - Wiki Delas
+const poolMulheres = new Pool({
+  connectionString: process.env.DATABASE_URL_MULHERES,
+  ssl: {
+    rejectUnauthorized: false // Necessário para conexões Railway
+  },
+  max: 20, // Número máximo de clientes no pool
+  idleTimeoutMillis: 30000, // Tempo de espera antes de fechar cliente inativo
+  connectionTimeoutMillis: 2000, // Tempo de espera para estabelecer conexão
+});
+
 // Event listeners para monitoramento - Rec'n'Play
 poolRecNPlay.on('connect', () => {
   console.log('✅ [Rec\'n\'Play] Nova conexão estabelecida com o banco de dados');
@@ -121,6 +132,15 @@ poolRio2C.on('error', (err) => {
   console.error('❌ [Rio2C] Erro inesperado no pool de conexões:', err);
 });
 
+// Event listeners para monitoramento - Wiki Delas
+poolMulheres.on('connect', () => {
+  console.log('✅ [Wiki Delas] Nova conexão estabelecida com o banco de dados');
+});
+
+poolMulheres.on('error', (err) => {
+  console.error('❌ [Wiki Delas] Erro inesperado no pool de conexões:', err);
+});
+
 // Função para obter o pool correto baseado no evento
 const getPool = (event = 'recnplay') => {
   if (event === 'global') {
@@ -133,6 +153,8 @@ const getPool = (event = 'recnplay') => {
     return poolSouthSummit;
   } else if (event === 'rio2c') {
     return poolRio2C;
+  } else if (event === 'mulheres') {
+    return poolMulheres;
   }
   return poolRecNPlay;
 };
@@ -145,7 +167,8 @@ const testConnection = async () => {
     cop: false,
     sest: false,
     southsummit: false,
-    rio2c: false
+    rio2c: false,
+    mulheres: false
   };
 
   try {
@@ -202,6 +225,15 @@ const testConnection = async () => {
     console.error('❌ [Rio2C] Erro ao conectar com o banco de dados:', error.message);
   }
 
+  try {
+    const clientMulheres = await poolMulheres.connect();
+    console.log('🔌 [Wiki Delas] Conexão com PostgreSQL estabelecida com sucesso!');
+    clientMulheres.release();
+    results.mulheres = true;
+  } catch (error) {
+    console.error('❌ [Wiki Delas] Erro ao conectar com o banco de dados:', error.message);
+  }
+
   return results;
 };
 
@@ -212,6 +244,7 @@ module.exports = {
   poolSEST,
   poolSouthSummit,
   poolRio2C,
+  poolMulheres,
   getPool,
   testConnection,
   // Mantém retrocompatibilidade

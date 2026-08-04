@@ -19,7 +19,8 @@ app.use(cors({
     'https://dashboard-sest.vercel.app',
     "https://dashboard-sest-cop30.vercel.app",
     'https://dashboard-south-summit.vercel.app',
-    'https://dashboard-rio2c.vercel.app'
+    'https://dashboard-rio2c.vercel.app',
+    'https://dashboard-mulheres.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],

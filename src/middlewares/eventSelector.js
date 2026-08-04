@@ -11,6 +11,7 @@ const { getPool } = require('../config/database');
  * - 'sest' ou 'sestsenat' -> SEST SENAT COP 30
  * - 'southsummit' ou 'south-summit' -> South Summit
  * - 'rio2c' -> Rio2C
+ * - 'mulheres' ou 'wikidelas' -> Wiki Delas
  */
 const eventSelector = (req, res, next) => {
   // Verifica query parameter primeiro, depois header
@@ -30,13 +31,18 @@ const eventSelector = (req, res, next) => {
     event = 'southsummit';
   } else if (event === 'rio-2c' || event === 'rio_2c' || event === 'rio2c') {
     event = 'rio2c';
+  } else if (
+    event === 'mulher' || event === 'mulheres' ||
+    event === 'wikidelas' || event === 'wiki-delas' || event === 'wiki_delas'
+  ) {
+    event = 'mulheres';
   }
 
   // Valida o evento
-  if (!['recnplay', 'global', 'cop', 'sest', 'southsummit', 'rio2c'].includes(event)) {
+  if (!['recnplay', 'global', 'cop', 'sest', 'southsummit', 'rio2c', 'mulheres'].includes(event)) {
     return res.status(400).json({
       success: false,
-      message: 'Evento inválido. Use "recnplay", "global", "cop", "sest", "southsummit" ou "rio2c"',
+      message: 'Evento inválido. Use "recnplay", "global", "cop", "sest", "southsummit", "rio2c" ou "mulheres"',
       receivedEvent: req.query.event || req.headers['x-event']
     });
   }
@@ -56,6 +62,8 @@ const eventSelector = (req, res, next) => {
     req.eventName = 'South Summit';
   } else if (event === 'rio2c') {
     req.eventName = 'Rio2C';
+  } else if (event === 'mulheres') {
+    req.eventName = 'Wiki Delas';
   } else {
     req.eventName = "Rec'n'Play";
   }
