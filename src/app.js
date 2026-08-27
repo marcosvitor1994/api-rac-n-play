@@ -21,11 +21,12 @@ app.use(cors({
     'https://dashboard-south-summit.vercel.app',
     'https://dashboard-rio2c.vercel.app',
     'https://dashboard-mulheres.vercel.app',
-    'https://dashboard-wiki-delas.vercel.app'
+    'https://dashboard-wiki-delas.vercel.app',
+    'https://dashboard-jornada-empreendedora.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Event']
 }));
 
 // Parser de JSON

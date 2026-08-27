@@ -13,7 +13,11 @@
       "Bash(npm install *)",
       "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const { poolRio2C } = require\\('./src/config/database'\\); \\(async \\(\\) => { try { const r = await poolRio2C.query\\('SELECT NOW\\(\\)'\\); console.log\\('Conexao Rio2C OK:', r.rows[0].now\\); const t = await poolRio2C.query\\(\\\\\"SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name\\\\\"\\); console.log\\('Tabelas \\(' + t.rows.length + '\\):', t.rows.map\\(x=>x.table_name\\).join\\(', '\\)\\); } catch\\(e\\) { console.error\\('Erro:', e.message\\); } finally { await poolRio2C.end\\(\\); } }\\)\\(\\);\")",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(node -e \"const a=require\\('firebase-admin'\\);console.log\\('firebase-admin OK'\\);console.log\\('count\\(\\) disponivel:', typeof require\\('firebase-admin/firestore'\\).getFirestore==='function'\\)\")",
+      "Bash(node \"C:/Users/marco/AppData/Local/Temp/claude/c--Users-marco-OneDrive-Desktop-GOON-evento-rec-n-play-api-rac-n-play/c1f2300e-b4bb-49b5-8fae-745b41a88cac/scratchpad/test_firestore.js\")",
+      "Bash(node -e ' *)",
+      "Bash(node \"C:/Users/marco/AppData/Local/Temp/claude/c--Users-marco-OneDrive-Desktop-GOON-evento-rec-n-play-api-rac-n-play/c1f2300e-b4bb-49b5-8fae-745b41a88cac/scratchpad/test_creds.js\")"
     ],
     "deny": [],
     "ask": []

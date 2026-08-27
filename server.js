@@ -1,6 +1,7 @@
 require('dotenv').config();
 const app = require('./src/app');
 const { testConnection } = require('./src/config/database');
+const { testFirebaseConnection } = require('./src/config/firebase');
 
 const PORT = process.env.PORT || 5000;
 
@@ -9,12 +10,21 @@ const PORT = process.env.PORT || 5000;
  */
 const startServer = async () => {
   try {
-    // Testa a conexão com o banco de dados
-    const isConnected = await testConnection();
-    
-    if (!isConnected) {
-      console.error('❌ Falha ao conectar com o banco de dados. Servidor não iniciado.');
+    // Testa a conexão com os bancos de dados (Postgres) e com o Firestore
+    const results = await testConnection();
+    results.jornada = await testFirebaseConnection();
+
+    // Só interrompe a inicialização se nenhuma fonte de dados responder
+    const anyConnected = Object.values(results).some(Boolean);
+
+    if (!anyConnected) {
+      console.error('❌ Falha ao conectar com todas as fontes de dados. Servidor não iniciado.');
       process.exit(1);
+    }
+
+    const offline = Object.keys(results).filter((key) => !results[key]);
+    if (offline.length > 0) {
+      console.warn(`⚠️  Eventos indisponíveis nesta inicialização: ${offline.join(', ')}`);
     }
 
     // Inicia o servidor Express

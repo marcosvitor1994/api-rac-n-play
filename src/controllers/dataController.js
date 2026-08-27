@@ -1,33 +1,35 @@
 const { pool } = require('../config/database');
+const createPostgresSource = require('../services/postgresSource');
 
 /**
  * Controller para gerenciar operações de dados
+ *
+ * As rotas são idênticas para todos os eventos. O que muda é a fonte de dados
+ * (req.dataSource), definida pelo middleware eventSelector:
+ *   - Postgres  -> tabelas e linhas
+ *   - Firestore -> coleções e documentos
  */
+
+// Fallback para chamadas que não passaram pelo middleware
+const fallbackSource = createPostgresSource(pool);
+
 const dataController = {
 
   /**
-   * Busca todas as tabelas do banco de dados
+   * Busca todas as tabelas (ou coleções) do banco de dados
    * GET /api/tables
    */
   getAllTables: async (req, res) => {
     try {
-      // Usa o pool do evento selecionado (vem do middleware)
-      const dbPool = req.dbPool || pool;
+      const source = req.dataSource || fallbackSource;
+      const tables = await source.listTables();
 
-      const query = `
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        ORDER BY table_name;
-      `;
-
-      const result = await dbPool.query(query);
-      
       res.status(200).json({
         success: true,
         event: req.eventName || "Rec'n'Play",
-        count: result.rows.length,
-        data: result.rows
+        source: source.type,
+        count: tables.length,
+        data: tables
       });
     } catch (error) {
       console.error('Erro ao buscar tabelas:', error);
@@ -45,38 +47,32 @@ const dataController = {
    */
   getTableData: async (req, res) => {
     try {
-      // Usa o pool do evento selecionado (vem do middleware)
-      const dbPool = req.dbPool || pool;
+      const source = req.dataSource || fallbackSource;
 
       const { tableName } = req.params;
-      const { limit = 100, offset = 0 } = req.query;
+      const limit = parseInt(req.query.limit) || 100;
+      const offset = parseInt(req.query.offset) || 0;
 
-      // Validação simples do nome da tabela
-      if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
+      // Cada fonte valida o nome conforme suas próprias regras
+      if (!source.validateTableName(tableName)) {
         return res.status(400).json({
           success: false,
           message: 'Nome de tabela inválido'
         });
       }
 
-      // Busca os dados com paginação
-      // Aspas duplas preservam maiúsculas no nome da tabela (ex: "Profile" do Prisma)
-      const dataQuery = `SELECT * FROM "${tableName}" LIMIT $1 OFFSET $2`;
-      const dataResult = await dbPool.query(dataQuery, [limit, offset]);
-
-      // Busca o total de registros
-      const countQuery = `SELECT COUNT(*) FROM "${tableName}"`;
-      const countResult = await dbPool.query(countQuery);
+      const { total, rows } = await source.getTableData(tableName, limit, offset);
 
       res.status(200).json({
         success: true,
         event: req.eventName || "Rec'n'Play",
+        source: source.type,
         table: tableName,
-        total: parseInt(countResult.rows[0].count),
-        count: dataResult.rows.length,
-        limit: parseInt(limit),
-        offset: parseInt(offset),
-        data: dataResult.rows
+        total,
+        count: rows.length,
+        limit,
+        offset,
+        data: rows
       });
     } catch (error) {
       console.error('Erro ao buscar dados da tabela:', error);
@@ -94,42 +90,20 @@ const dataController = {
    */
   getAllData: async (req, res) => {
     try {
-      // Usa o pool do evento selecionado (vem do middleware)
-      const dbPool = req.dbPool || pool;
+      const source = req.dataSource || fallbackSource;
 
-      // Primeiro, busca todas as tabelas
-      const tablesQuery = `
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        ORDER BY table_name;
-      `;
-
-      const tablesResult = await dbPool.query(tablesQuery);
-      const allData = {};
-
-      // Para cada tabela, busca todos os dados
-      for (const table of tablesResult.rows) {
-        const tableName = table.table_name;
-        try {
-          const dataQuery = `SELECT * FROM "${tableName}"`;
-          const dataResult = await dbPool.query(dataQuery);
-          allData[tableName] = {
-            count: dataResult.rows.length,
-            data: dataResult.rows
-          };
-        } catch (error) {
-          console.error(`Erro ao buscar dados da tabela ${tableName}:`, error);
-          allData[tableName] = {
-            error: error.message
-          };
-        }
+      const options = {};
+      if (req.query.limit) {
+        options.limit = parseInt(req.query.limit);
       }
+
+      const allData = await source.getAllData(options);
 
       res.status(200).json({
         success: true,
         event: req.eventName || "Rec'n'Play",
-        totalTables: tablesResult.rows.length,
+        source: source.type,
+        totalTables: Object.keys(allData).length,
         tables: allData
       });
     } catch (error) {
@@ -148,19 +122,20 @@ const dataController = {
    */
   healthCheck: async (req, res) => {
     try {
-      // Usa o pool do evento selecionado (vem do middleware)
-      const dbPool = req.dbPool || pool;
+      const source = req.dataSource || fallbackSource;
+      const timestamp = await source.health();
 
-      const result = await dbPool.query('SELECT NOW()');
       res.status(200).json({
         success: true,
         event: req.eventName || "Rec'n'Play",
+        source: source.type,
         message: 'API e banco de dados funcionando corretamente',
-        timestamp: result.rows[0].now
+        timestamp
       });
     } catch (error) {
       res.status(503).json({
         success: false,
+        event: req.eventName,
         message: 'Erro na conexão com o banco de dados',
         error: error.message
       });
