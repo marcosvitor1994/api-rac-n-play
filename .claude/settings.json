@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -pe \"require\\('firebase-admin/package.json'\\).version\")"
+      "Bash(node -pe \"require\\('firebase-admin/package.json'\\).version\")",
+      "Bash(npm ls *)",
+      "Bash(node -pe \"const p=require\\('./node_modules/jose/package.json'\\);JSON.stringify\\({version:p.version,type:p.type,main:p.main},null,1\\)\")",
+      "Bash(node -pe \"require\\('./node_modules/jwks-rsa/package.json'\\).version\")",
+      "Bash(node --no-experimental-require-module -e \"require\\('firebase-admin/auth'\\); console.log\\('carregou'\\)\")",
+      "Bash(npm view *)",
+      "Bash(node -pe \"const p=require\\('./node_modules/jose/package.json'\\);JSON.stringify\\({version:p.version,type:p.type||'\\(commonjs\\)',main:p.main}\\)\")",
+      "Bash(node --no-experimental-require-module -e ' *)",
+      "Bash(node --no-experimental-require-module -e \"require\\('./src/app'\\); console.log\\('src/app.js carregou OK'\\)\")",
+      "Bash(node \"C:/Users/marco/AppData/Local/Temp/claude/c--Users-marco-OneDrive-Desktop-GOON-evento-rec-n-play-api-rac-n-play/c1f2300e-b4bb-49b5-8fae-745b41a88cac/scratchpad/test_firestore.js\")",
+      "Bash(node \"C:/Users/marco/AppData/Local/Temp/claude/c--Users-marco-OneDrive-Desktop-GOON-evento-rec-n-play-api-rac-n-play/c1f2300e-b4bb-49b5-8fae-745b41a88cac/scratchpad/test_creds.js\")",
+      "Bash(curl -s '__TRACKED_VAR__/data/inscricoes?event=jornada&limit=1')",
+      "Bash(node -pe \"const j=JSON.parse\\(require\\('fs'\\).readFileSync\\(0,'utf8'\\)\\);j.success?\\('total de usuarios='+j.total+' campos='+Object.keys\\(j.data[0]||{}\\).join\\(','\\)\\):\\('ERRO: '+j.error\\)\")",
+      "Bash(node -pe ' *)",
+      "Bash(node -pe \"require\\('./node_modules/jwks-rsa/node_modules/jose/package.json'\\).version\")",
+      "Bash(node --no-experimental-require-module -e \"require\\('firebase-admin/auth'\\);console.log\\('OK: firebase-admin carrega no runtime do Vercel'\\)\")"
     ]
   }
 }

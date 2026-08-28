@@ -24,5 +24,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
+  },
+  "overrides": {
+    "jose": "^5.10.0"
   }
 }
