@@ -16,7 +16,16 @@
       "Bash(node -pe \"const j=JSON.parse\\(require\\('fs'\\).readFileSync\\(0,'utf8'\\)\\);j.success?\\('total de usuarios='+j.total+' campos='+Object.keys\\(j.data[0]||{}\\).join\\(','\\)\\):\\('ERRO: '+j.error\\)\")",
       "Bash(node -pe ' *)",
       "Bash(node -pe \"require\\('./node_modules/jwks-rsa/node_modules/jose/package.json'\\).version\")",
-      "Bash(node --no-experimental-require-module -e \"require\\('firebase-admin/auth'\\);console.log\\('OK: firebase-admin carrega no runtime do Vercel'\\)\")"
+      "Bash(node --no-experimental-require-module -e \"require\\('firebase-admin/auth'\\);console.log\\('OK: firebase-admin carrega no runtime do Vercel'\\)\")",
+      "Bash(cd \"c:/Users/marco/OneDrive/Desktop/GOON/evento rec-n-play/api-rac-n-play\" *)",
+      "Bash(curl -s -o /dev/null -w \"sem chave: HTTP %{http_code}\\\\n\" \"https://qjofqzaopaudurqpisaf.supabase.co/rest/v1/\")",
+      "Bash(curl -s \"https://qjofqzaopaudurqpisaf.supabase.co/rest/v1/\")",
+      "Bash(curl -s \"https://qjofqzaopaudurqpisaf.supabase.co/auth/v1/settings\")",
+      "Bash(node -e ' *)",
+      "Bash(node --no-experimental-require-module -e \"require\\('./src/app'\\); console.log\\('OK: src/app.js carrega'\\)\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\marco\\OneDrive\\Desktop\\GOON\\evento rec-n-play\\api-rac-n-play"
     ]
   }
 }

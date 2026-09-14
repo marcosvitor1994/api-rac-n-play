@@ -1,9 +1,28 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+/**
+ * Remove o parâmetro sslmode da connection string.
+ *
+ * O `pg` interpreta `?sslmode=require` e o aplica por cima do objeto `ssl`
+ * abaixo, o que faz a conexão falhar com "self-signed certificate in
+ * certificate chain" (é o caso das strings que o Supabase entrega pronto).
+ * Como todos os pools daqui já definem explicitamente o modo de SSL, o
+ * parâmetro é redundante — e removê-lo evita que a string copiada do painel
+ * do provedor quebre a conexão, aqui ou nas variáveis de ambiente do Vercel.
+ *
+ * Não tem efeito nas strings do Railway, que não trazem esse parâmetro.
+ */
+const sanitizeConnectionString = (url) => {
+  if (!url) return url;
+  return url
+    .replace(/([?&])sslmode=[^&]*&?/g, '$1')
+    .replace(/[?&]$/, '');
+};
+
 // Configuração do Pool de Conexões - Rec'n'Play
 const poolRecNPlay = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL),
   ssl: {
     rejectUnauthorized: false // Necessário para conexões Railway
   },
@@ -14,7 +33,7 @@ const poolRecNPlay = new Pool({
 
 // Configuração do Pool de Conexões - Global Citizen Festival Amazônia
 const poolGlobal = new Pool({
-  connectionString: process.env.DATABASE_URL_GLOBAL,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL_GLOBAL),
   ssl: {
     rejectUnauthorized: false // Necessário para conexões Railway
   },
@@ -25,7 +44,7 @@ const poolGlobal = new Pool({
 
 // Configuração do Pool de Conexões - COP
 const poolCOP = new Pool({
-  connectionString: process.env.DATABASE_URL_COP,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL_COP),
   ssl: {
     rejectUnauthorized: false // Necessário para conexões Railway
   },
@@ -36,7 +55,7 @@ const poolCOP = new Pool({
 
 // Configuração do Pool de Conexões - SEST SENAT COP 30
 const poolSEST = new Pool({
-  connectionString: process.env.DATABASE_URL_SEST,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL_SEST),
   ssl: {
     rejectUnauthorized: false // Necessário para conexões Railway
   },
@@ -47,7 +66,7 @@ const poolSEST = new Pool({
 
 // Configuração do Pool de Conexões - South Summit
 const poolSouthSummit = new Pool({
-  connectionString: process.env.DATABASE_URL_SOUTHSUMMIT,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL_SOUTHSUMMIT),
   ssl: {
     rejectUnauthorized: false // Necessário para conexões Railway
   },
@@ -58,7 +77,7 @@ const poolSouthSummit = new Pool({
 
 // Configuração do Pool de Conexões - Rio2C
 const poolRio2C = new Pool({
-  connectionString: process.env.DATABASE_URL_RIO2C,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL_RIO2C),
   ssl: {
     rejectUnauthorized: false // Necessário para conexões Railway
   },
@@ -69,13 +88,26 @@ const poolRio2C = new Pool({
 
 // Configuração do Pool de Conexões - Wiki Delas
 const poolMulheres = new Pool({
-  connectionString: process.env.DATABASE_URL_MULHERES,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL_MULHERES),
   ssl: {
     rejectUnauthorized: false // Necessário para conexões Railway
   },
   max: 20, // Número máximo de clientes no pool
   idleTimeoutMillis: 30000, // Tempo de espera antes de fechar cliente inativo
   connectionTimeoutMillis: 2000, // Tempo de espera para estabelecer conexão
+});
+
+// Configuração do Pool de Conexões - Pesquisa (Supabase)
+const poolPesquisa = new Pool({
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL_PESQUISA),
+  ssl: {
+    rejectUnauthorized: false // O pooler do Supabase usa certificado próprio
+  },
+  // O pooler do Supabase tem um limite de conexões bem menor que o Railway,
+  // e em serverless cada instância abre o seu próprio pool
+  max: 5,
+  idleTimeoutMillis: 30000, // Tempo de espera antes de fechar cliente inativo
+  connectionTimeoutMillis: 10000, // Pooler externo demora mais que o Railway
 });
 
 // Event listeners para monitoramento - Rec'n'Play
@@ -141,6 +173,15 @@ poolMulheres.on('error', (err) => {
   console.error('❌ [Wiki Delas] Erro inesperado no pool de conexões:', err);
 });
 
+// Event listeners para monitoramento - Pesquisa
+poolPesquisa.on('connect', () => {
+  console.log('✅ [Pesquisa] Nova conexão estabelecida com o banco de dados');
+});
+
+poolPesquisa.on('error', (err) => {
+  console.error('❌ [Pesquisa] Erro inesperado no pool de conexões:', err);
+});
+
 // Função para obter o pool correto baseado no evento
 const getPool = (event = 'recnplay') => {
   if (event === 'global') {
@@ -155,6 +196,8 @@ const getPool = (event = 'recnplay') => {
     return poolRio2C;
   } else if (event === 'mulheres') {
     return poolMulheres;
+  } else if (event === 'pesquisa') {
+    return poolPesquisa;
   }
   return poolRecNPlay;
 };
@@ -168,7 +211,8 @@ const testConnection = async () => {
     sest: false,
     southsummit: false,
     rio2c: false,
-    mulheres: false
+    mulheres: false,
+    pesquisa: false
   };
 
   try {
@@ -234,6 +278,15 @@ const testConnection = async () => {
     console.error('❌ [Wiki Delas] Erro ao conectar com o banco de dados:', error.message);
   }
 
+  try {
+    const clientPesquisa = await poolPesquisa.connect();
+    console.log('🔌 [Pesquisa] Conexão com PostgreSQL estabelecida com sucesso!');
+    clientPesquisa.release();
+    results.pesquisa = true;
+  } catch (error) {
+    console.error('❌ [Pesquisa] Erro ao conectar com o banco de dados:', error.message);
+  }
+
   return results;
 };
 
@@ -245,8 +298,10 @@ module.exports = {
   poolSouthSummit,
   poolRio2C,
   poolMulheres,
+  poolPesquisa,
   getPool,
   testConnection,
+  sanitizeConnectionString,
   // Mantém retrocompatibilidade
   pool: poolRecNPlay
 };

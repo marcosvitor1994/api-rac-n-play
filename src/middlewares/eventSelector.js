@@ -47,6 +47,14 @@ const EVENTS = {
     source: 'postgres',
     aliases: ['mulher', 'wikidelas', 'wiki-delas', 'wiki_delas']
   },
+  pesquisa: {
+    name: 'Pesquisa',
+    source: 'postgres',
+    // Supabase: os dados ficam na view bi.dados_respostas_pesquisas,
+    // e não no schema public
+    schema: 'bi',
+    aliases: ['pesquisas', 'satisfacao']
+  },
   jornada: {
     name: 'Jornada Empreendedora',
     source: 'firestore',
@@ -78,7 +86,8 @@ const getDataSource = (eventKey) => {
   if (EVENTS[eventKey].source === 'firestore') {
     return firestoreSource;
   }
-  return createPostgresSource(getPool(eventKey));
+  // Eventos sem `schema` declarado usam o padrão 'public'
+  return createPostgresSource(getPool(eventKey), EVENTS[eventKey].schema);
 };
 
 /**
@@ -93,6 +102,7 @@ const getDataSource = (eventKey) => {
  * - 'southsummit' ou 'south-summit' -> South Summit
  * - 'rio2c' -> Rio2C
  * - 'mulheres' ou 'wikidelas' -> Wiki Delas
+ * - 'pesquisa' ou 'satisfacao' -> Pesquisa (Supabase, schema 'bi')
  * - 'jornada' ou 'jornada-empreendedora' -> Jornada Empreendedora (Firebase)
  */
 const eventSelector = (req, res, next) => {
