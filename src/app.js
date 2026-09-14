@@ -22,7 +22,8 @@ app.use(cors({
     'https://dashboard-rio2c.vercel.app',
     'https://dashboard-mulheres.vercel.app',
     'https://dashboard-wiki-delas.vercel.app',
-    'https://dashboard-jornada-empreendedora.vercel.app'
+    'https://dashboard-jornada-empreendedora.vercel.app',
+    'https://dashboard-sense-terrua.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
